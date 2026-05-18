@@ -1,0 +1,51 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    
+    <!-- Soft Glow behind the logo -->
+    <path
+        android:fillColor="#22818CF8"
+        android:pathData="M54,54m-28,0a28,28 0,1 1,56 0a28,28 0,1 1,-56 0" />
+
+    <!-- Main Book base -->
+    <path
+        android:pathData="M54,75 C45,71 31,69 22,69 L22,33 C31,33 45,35 54,39 C63,35 77,33 86,33 L86,69 C77,69 63,71 54,75 Z"
+        android:fillType="nonZero">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="22"
+                android:startY="33"
+                android:endX="86"
+                android:endY="75"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#FFFFFF" />
+                <item android:offset="1.0" android:color="#E2E8F0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Ribbon / Bookmark hanging down -->
+    <path
+        android:pathData="M52,38 L56,38 L56,58 L54,55 L52,58 Z"
+        android:fillType="nonZero">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="52"
+                android:startY="38"
+                android:endX="56"
+                android:endY="58"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#818CF8" />
+                <item android:offset="1.0" android:color="#6366F1" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Spine details -->
+    <path
+        android:fillColor="#CBD5E1"
+        android:pathData="M53,39 L55,39 L55,73 L53,73 Z" />
+</vector>

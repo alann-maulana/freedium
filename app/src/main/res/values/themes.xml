@@ -1,0 +1,15 @@
+<resources>
+    <!-- Base application theme. -->
+    <style name="Theme.Freedium" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Status bar and navigation bar styling to match app dark gradient theme -->
+        <item name="android:statusBarColor">#0F172A</item>
+        <item name="android:navigationBarColor">#1E1B4B</item>
+        
+        <!-- Prevents standard light-flash during launch of dark themed app -->
+        <item name="android:windowBackground">#0F172A</item>
+
+        <!-- Splash Screen styling (API 31+) -->
+        <item name="android:windowSplashScreenBackground">#0F172A</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+    </style>
+</resources>
