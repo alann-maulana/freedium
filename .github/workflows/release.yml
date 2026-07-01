@@ -1,0 +1,59 @@
+name: Release APK
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build:
+    name: Build & Release APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ── Signing files ────────────────────────────────────────────────────────
+      # key.properties and the JKS are gitignored.
+      # They are stored as GitHub Secrets and restored here before the build.
+
+      - name: Restore key.properties
+        run: echo "${{ secrets.KEY_PROPERTIES }}" > key.properties
+
+      - name: Restore keystore (.jks)
+        # The JKS binary is stored as a Base64-encoded secret.
+        # Encode locally with: base64 -i alann-maulana.jks | pbcopy
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > alann-maulana.jks
+
+      # ── Java / Gradle setup ──────────────────────────────────────────────────
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Grant Gradle wrapper execute permission
+        run: chmod +x gradlew
+
+      # ── Build ────────────────────────────────────────────────────────────────
+      - name: Build Release APK
+        run: ./gradlew assembleRelease --no-daemon
+
+      # ── Upload artifact ──────────────────────────────────────────────────────
+      - name: Upload APK as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-${{ github.ref_name }}
+          path: app/build/outputs/apk/release/app-release.apk
+          if-no-files-found: error
+
+      # ── GitHub Release ───────────────────────────────────────────────────────
+      - name: Create GitHub Release and attach APK
+        uses: softprops/action-gh-release@v2
+        with:
+          files: app/build/outputs/apk/release/app-release.apk
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          generate_release_notes: true
