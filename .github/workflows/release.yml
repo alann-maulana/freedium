@@ -44,12 +44,15 @@ jobs:
       - name: Build Release APK
         run: ./gradlew assembleRelease --no-daemon
 
+      - name: Rename APK
+        run: mv app/build/outputs/apk/release/app-release.apk app/build/outputs/apk/release/Freedium-${{ github.ref_name }}.apk
+
       # ── Upload artifact ──────────────────────────────────────────────────────
       - name: Upload APK as workflow artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-release-${{ github.ref_name }}
-          path: app/build/outputs/apk/release/app-release.apk
+          path: app/build/outputs/apk/release/Freedium-${{ github.ref_name }}.apk
           if-no-files-found: error
 
       # ── GitHub Release ───────────────────────────────────────────────────────
@@ -57,7 +60,10 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          files: app/build/outputs/apk/release/app-release.apk
+          files: app/build/outputs/apk/release/Freedium-${{ github.ref_name }}.apk
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
+          body: |
+            ## 📦 Install
+            Download **Freedium-${{ github.ref_name }}.apk** below and sideload it on Android (API 24+).
           generate_release_notes: true
