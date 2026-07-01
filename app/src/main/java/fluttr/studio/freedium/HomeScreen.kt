@@ -31,6 +31,12 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.platform.LocalContext
+import kotlinx.coroutines.launch
 
 private enum class ReaderMode { MEDIUM, NEWS }
 
@@ -43,6 +49,11 @@ fun HomeScreen(
     var textInput by remember { mutableStateOf("") }
     var selectedMode by remember { mutableStateOf(ReaderMode.MEDIUM) }
     val scrollState = rememberScrollState()
+
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    var isCheckingUpdate by remember { mutableStateOf(false) }
+    var updateResult by remember { mutableStateOf<UpdateResult.UpdateAvailable?>(null) }
 
     val backgroundGradient = Brush.verticalGradient(
         colors = listOf(
@@ -338,13 +349,55 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             // ── Version badge ─────────────────────────────────────────────────
-            VersionBadge()
+            VersionBadge(
+                isChecking = isCheckingUpdate,
+                onClick = {
+                    if (isCheckingUpdate) return@VersionBadge
+                    isCheckingUpdate = true
+                    coroutineScope.launch {
+                        val result = UpdateChecker.checkUpdate()
+                        isCheckingUpdate = false
+                        when (result) {
+                            is UpdateResult.UpdateAvailable -> {
+                                updateResult = result
+                            }
+                            is UpdateResult.NoUpdate -> {
+                                Toast.makeText(context, "You are on the latest version", Toast.LENGTH_SHORT).show()
+                            }
+                            is UpdateResult.Error -> {
+                                Toast.makeText(context, "Failed to check update: ${result.message}", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                }
+            )
+
+            if (updateResult != null) {
+                AlertDialog(
+                    onDismissRequest = { updateResult = null },
+                    title = { Text("Update Available") },
+                    text = { Text("Version ${updateResult!!.version} is available. You are currently on ${BuildConfig.VERSION_NAME}.") },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            UpdateDownloader.downloadApk(context, updateResult!!.url, updateResult!!.version)
+                            updateResult = null
+                        }) {
+                            Text("Download")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { updateResult = null }) {
+                            Text("Later")
+                        }
+                    }
+                )
+            }
         }
     }
 }
 
 @Composable
-private fun VersionBadge() {
+private fun VersionBadge(isChecking: Boolean, onClick: () -> Unit) {
     val pulse = rememberInfiniteTransition(label = "pulse")
     val alpha by pulse.animateFloat(
         initialValue = 0.5f,
@@ -359,6 +412,7 @@ private fun VersionBadge() {
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(50))
+            .clickable(onClick = onClick)
             .background(
                 Brush.horizontalGradient(
                     colors = listOf(Color(0x1A818CF8), Color(0x1A4F46E5))
@@ -377,13 +431,21 @@ private fun VersionBadge() {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            // Pulsing dot
-            Box(
-                modifier = Modifier
-                    .size(6.dp)
-                    .clip(CircleShape)
-                    .background(Color(0xFF818CF8).copy(alpha = alpha))
-            )
+            if (isChecking) {
+                CircularProgressIndicator(
+                    color = Color(0xFF818CF8),
+                    strokeWidth = 2.dp,
+                    modifier = Modifier.size(12.dp)
+                )
+            } else {
+                // Pulsing dot
+                Box(
+                    modifier = Modifier
+                        .size(6.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFF818CF8).copy(alpha = alpha))
+                )
+            }
             Text(
                 text = "v${BuildConfig.VERSION_NAME}",
                 color = Color(0xFF818CF8),
@@ -397,7 +459,7 @@ private fun VersionBadge() {
                 fontSize = 12.sp
             )
             Text(
-                text = "Build ${BuildConfig.VERSION_CODE}",
+                text = if (isChecking) "Checking..." else "Build ${BuildConfig.VERSION_CODE}",
                 color = Color(0xFF475569),
                 fontSize = 12.sp,
                 letterSpacing = 0.3.sp
