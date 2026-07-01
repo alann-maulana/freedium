@@ -11,6 +11,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.filled.Newspaper
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,13 +27,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+private enum class ReaderMode { MEDIUM, NEWS }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(onUrlSubmitted: (String) -> Unit) {
+fun HomeScreen(
+    onMediumUrlSubmitted: (String) -> Unit,
+    onNewsUrlSubmitted: (String) -> Unit
+) {
     var textInput by remember { mutableStateOf("") }
+    var selectedMode by remember { mutableStateOf(ReaderMode.MEDIUM) }
     val scrollState = rememberScrollState()
 
-    // Vibrant gradients matching modern premium design guidelines
     val backgroundGradient = Brush.verticalGradient(
         colors = listOf(
             Color(0xFF0F172A), // Slate 900
@@ -42,8 +48,8 @@ fun HomeScreen(onUrlSubmitted: (String) -> Unit) {
 
     val cardGradient = Brush.linearGradient(
         colors = listOf(
-            Color(0x1F818CF8), // Indigo 400 with 12% opacity
-            Color(0x0C312E81)  // Indigo 900 with 5% opacity
+            Color(0x1F818CF8),
+            Color(0x0C312E81)
         )
     )
 
@@ -63,7 +69,7 @@ fun HomeScreen(onUrlSubmitted: (String) -> Unit) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Elegant glowing App Logo/Icon container
+            // App Logo
             Box(
                 modifier = Modifier
                     .size(80.dp)
@@ -77,7 +83,8 @@ fun HomeScreen(onUrlSubmitted: (String) -> Unit) {
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.MenuBook,
+                    imageVector = if (selectedMode == ReaderMode.MEDIUM)
+                        Icons.AutoMirrored.Filled.MenuBook else Icons.Default.Newspaper,
                     contentDescription = "Reader",
                     tint = Color.White,
                     modifier = Modifier.size(36.dp)
@@ -87,7 +94,7 @@ fun HomeScreen(onUrlSubmitted: (String) -> Unit) {
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "Freedium Mirror Client",
+                text = "Freedium Reader",
                 color = Color.White,
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
@@ -97,16 +104,77 @@ fun HomeScreen(onUrlSubmitted: (String) -> Unit) {
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Read Medium articles beautifully and restriction-free.",
-                color = Color(0xFF94A3B8), // Slate 400
+                text = if (selectedMode == ReaderMode.MEDIUM)
+                    "Read Medium articles beautifully and restriction-free."
+                else
+                    "Read any news article — no ads, no popups, just words.",
+                color = Color(0xFF94A3B8),
                 fontSize = 15.sp,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = 16.dp)
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(28.dp))
 
-            // Premium Glassmorphism Card
+            // ── Mode selector ─────────────────────────────────────────────────
+            SingleChoiceSegmentedButtonRow(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                SegmentedButton(
+                    selected = selectedMode == ReaderMode.MEDIUM,
+                    onClick = {
+                        selectedMode = ReaderMode.MEDIUM
+                        textInput = ""
+                    },
+                    shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
+                    colors = SegmentedButtonDefaults.colors(
+                        activeContainerColor = Color(0xFF4F46E5),
+                        activeContentColor = Color.White,
+                        activeBorderColor = Color(0xFF6366F1),
+                        inactiveContainerColor = Color(0x1A818CF8),
+                        inactiveContentColor = Color(0xFF94A3B8),
+                        inactiveBorderColor = Color(0x334D46E5)
+                    ),
+                    icon = {}
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.MenuBook,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("Medium Bypass", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                }
+                SegmentedButton(
+                    selected = selectedMode == ReaderMode.NEWS,
+                    onClick = {
+                        selectedMode = ReaderMode.NEWS
+                        textInput = ""
+                    },
+                    shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
+                    colors = SegmentedButtonDefaults.colors(
+                        activeContainerColor = Color(0xFF4F46E5),
+                        activeContentColor = Color.White,
+                        activeBorderColor = Color(0xFF6366F1),
+                        inactiveContainerColor = Color(0x1A818CF8),
+                        inactiveContentColor = Color(0xFF94A3B8),
+                        inactiveBorderColor = Color(0x33818CF8)
+                    ),
+                    icon = {}
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Newspaper,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("News Reader", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // ── URL input card ────────────────────────────────────────────────
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -121,11 +189,12 @@ fun HomeScreen(onUrlSubmitted: (String) -> Unit) {
                         .background(cardGradient)
                         .padding(24.dp)
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            text = "Paste Article Link",
+                            text = if (selectedMode == ReaderMode.MEDIUM)
+                                "Paste Medium Article Link"
+                            else
+                                "Paste Any News Article Link",
                             color = Color.White,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.SemiBold
@@ -136,7 +205,15 @@ fun HomeScreen(onUrlSubmitted: (String) -> Unit) {
                         OutlinedTextField(
                             value = textInput,
                             onValueChange = { textInput = it },
-                            placeholder = { Text("https://medium.com/...", color = Color(0xFF64748B)) },
+                            placeholder = {
+                                Text(
+                                    text = if (selectedMode == ReaderMode.MEDIUM)
+                                        "https://medium.com/..."
+                                    else
+                                        "https://bbc.com/news/...",
+                                    color = Color(0xFF64748B)
+                                )
+                            },
                             singleLine = true,
                             keyboardOptions = KeyboardOptions(
                                 keyboardType = KeyboardType.Uri,
@@ -145,7 +222,11 @@ fun HomeScreen(onUrlSubmitted: (String) -> Unit) {
                             keyboardActions = KeyboardActions(
                                 onGo = {
                                     if (textInput.isNotBlank()) {
-                                        onUrlSubmitted(textInput.trim())
+                                        if (selectedMode == ReaderMode.MEDIUM) {
+                                            onMediumUrlSubmitted(textInput.trim())
+                                        } else {
+                                            onNewsUrlSubmitted(textInput.trim())
+                                        }
                                     }
                                 }
                             ),
@@ -167,13 +248,17 @@ fun HomeScreen(onUrlSubmitted: (String) -> Unit) {
                         Button(
                             onClick = {
                                 if (textInput.isNotBlank()) {
-                                    onUrlSubmitted(textInput.trim())
+                                    if (selectedMode == ReaderMode.MEDIUM) {
+                                        onMediumUrlSubmitted(textInput.trim())
+                                    } else {
+                                        onNewsUrlSubmitted(textInput.trim())
+                                    }
                                 }
                             },
                             enabled = textInput.isNotBlank(),
                             shape = RoundedCornerShape(14.dp),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFF6366F1), // Indigo 500
+                                containerColor = Color(0xFF6366F1),
                                 contentColor = Color.White,
                                 disabledContainerColor = Color(0x4D6366F1),
                                 disabledContentColor = Color(0x80FFFFFF)
@@ -182,7 +267,12 @@ fun HomeScreen(onUrlSubmitted: (String) -> Unit) {
                                 .fillMaxWidth()
                                 .height(50.dp)
                         ) {
-                            Text("Open Article", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                            Text(
+                                text = if (selectedMode == ReaderMode.MEDIUM)
+                                    "Open Article" else "Read Clean",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp
+                            )
                         }
                     }
                 }
@@ -190,7 +280,7 @@ fun HomeScreen(onUrlSubmitted: (String) -> Unit) {
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Instructions card
+            // ── Instructions card ─────────────────────────────────────────────
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -202,22 +292,41 @@ fun HomeScreen(onUrlSubmitted: (String) -> Unit) {
                     modifier = Modifier.padding(20.dp),
                     horizontalAlignment = Alignment.Start
                 ) {
-                    Text(
-                        text = "💡 How to Use Share Extension:",
-                        color = Color.White,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text(
-                        text = "1. Open any Medium article inside Medium, Chrome, or any other browser.\n" +
-                                "2. Tap the Share button.\n" +
-                                "3. Select \"Freedium\" from the system share sheet.\n" +
-                                "4. The article will open instantly in our reader WebView!",
-                        color = Color(0xFF94A3B8),
-                        fontSize = 13.sp,
-                        lineHeight = 18.sp
-                    )
+                    if (selectedMode == ReaderMode.MEDIUM) {
+                        Text(
+                            text = "💡 How to Use Share Extension:",
+                            color = Color.White,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = "1. Open any Medium article inside Medium, Chrome, or any other browser.\n" +
+                                    "2. Tap the Share button.\n" +
+                                    "3. Select \"Freedium\" from the system share sheet.\n" +
+                                    "4. The article will open instantly in our reader WebView!",
+                            color = Color(0xFF94A3B8),
+                            fontSize = 13.sp,
+                            lineHeight = 18.sp
+                        )
+                    } else {
+                        Text(
+                            text = "🗞️ How News Reader Works:",
+                            color = Color.White,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = "1. Copy a link from any news site (BBC, CNN, Reuters, etc.).\n" +
+                                    "2. Paste it above and tap \"Read Clean\".\n" +
+                                    "3. We extract just the article — title, author, and body.\n" +
+                                    "4. Or share any link from your browser — we'll auto-detect it!",
+                            color = Color(0xFF94A3B8),
+                            fontSize = 13.sp,
+                            lineHeight = 18.sp
+                        )
+                    }
                 }
             }
         }
