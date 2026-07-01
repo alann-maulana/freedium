@@ -135,14 +135,14 @@ fun HomeScreen(
                         inactiveContentColor = Color(0xFF94A3B8),
                         inactiveBorderColor = Color(0x334D46E5)
                     ),
-                    icon = {}
+                    icon = {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.MenuBook,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
                 ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.MenuBook,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
                     Text("Medium Bypass", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                 }
                 SegmentedButton(
@@ -160,14 +160,14 @@ fun HomeScreen(
                         inactiveContentColor = Color(0xFF94A3B8),
                         inactiveBorderColor = Color(0x33818CF8)
                     ),
-                    icon = {}
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Default.Newspaper,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Newspaper,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
                     Text("News Reader", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
