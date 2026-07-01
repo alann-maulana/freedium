@@ -41,20 +41,10 @@ class UpdateDownloadReceiver : BroadcastReceiver() {
                 if (cursor.moveToFirst()) {
                     val statusIndex = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS)
                     if (statusIndex != -1 && cursor.getInt(statusIndex) == DownloadManager.STATUS_SUCCESSFUL) {
-                        val uriIndex = cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI)
-                        if (uriIndex != -1) {
-                            val uriString = cursor.getString(uriIndex)
-                            val fileUri = Uri.parse(uriString)
-                            val file = File(fileUri.path!!)
-                            
-                            val providerUri = FileProvider.getUriForFile(
-                                context,
-                                "${context.packageName}.fileprovider",
-                                file
-                            )
-
+                        val uri = downloadManager.getUriForDownloadedFile(id)
+                        if (uri != null) {
                             val installIntent = Intent(Intent.ACTION_VIEW).apply {
-                                setDataAndType(providerUri, "application/vnd.android.package-archive")
+                                setDataAndType(uri, "application/vnd.android.package-archive")
                                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
                             }
 
