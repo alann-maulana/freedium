@@ -1,5 +1,10 @@
 package fluttr.studio.freedium
 
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -329,6 +334,74 @@ fun HomeScreen(
                     }
                 }
             }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // ── Version badge ─────────────────────────────────────────────────
+            VersionBadge()
+        }
+    }
+}
+
+@Composable
+private fun VersionBadge() {
+    val pulse = rememberInfiniteTransition(label = "pulse")
+    val alpha by pulse.animateFloat(
+        initialValue = 0.5f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1800),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "dotAlpha"
+    )
+
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(50))
+            .background(
+                Brush.horizontalGradient(
+                    colors = listOf(Color(0x1A818CF8), Color(0x1A4F46E5))
+                )
+            )
+            .border(
+                width = 1.dp,
+                brush = Brush.horizontalGradient(
+                    colors = listOf(Color(0x4D818CF8), Color(0x4D4F46E5))
+                ),
+                shape = RoundedCornerShape(50)
+            )
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            // Pulsing dot
+            Box(
+                modifier = Modifier
+                    .size(6.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFF818CF8).copy(alpha = alpha))
+            )
+            Text(
+                text = "v${BuildConfig.VERSION_NAME}",
+                color = Color(0xFF818CF8),
+                fontSize = 12.sp,
+                fontWeight = FontWeight.SemiBold,
+                letterSpacing = 0.5.sp
+            )
+            Text(
+                text = "·",
+                color = Color(0xFF475569),
+                fontSize = 12.sp
+            )
+            Text(
+                text = "Build ${BuildConfig.VERSION_CODE}",
+                color = Color(0xFF475569),
+                fontSize = 12.sp,
+                letterSpacing = 0.3.sp
+            )
         }
     }
 }
