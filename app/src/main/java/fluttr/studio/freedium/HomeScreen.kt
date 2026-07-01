@@ -376,7 +376,7 @@ fun HomeScreen(
                 AlertDialog(
                     onDismissRequest = { updateResult = null },
                     title = { Text("Update Available") },
-                    text = { Text("Version ${updateResult!!.version} is available. You are currently on ${BuildConfig.VERSION_NAME}.") },
+                    text = { Text("Version ${updateResult!!.version} is available. You are currently on ${BuildConfig.VERSION_NAME}+${BuildConfig.VERSION_CODE}.") },
                     confirmButton = {
                         TextButton(onClick = {
                             UpdateDownloader.downloadApk(context, updateResult!!.url, updateResult!!.version)
